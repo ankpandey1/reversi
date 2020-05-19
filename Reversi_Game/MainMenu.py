@@ -119,7 +119,7 @@ class Options:
         # index 0 = music volume, index 1 = voice volume
         # self.soundInfo = [50, 50]
         bg_music.set_volume(soundInfo[0])
-        # bg_music.play(-1)
+        bg_music.play(-1)
         self.optionNumber = 0
         self.setupPositionOfHUDItems()
 
