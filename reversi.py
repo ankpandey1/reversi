@@ -1,5 +1,6 @@
 import random, sys, pygame, time, copy
 from pygame.locals import *
+import json
 
 WHITE_TILE = 'W'
 BLACK_TILE = 'B'
@@ -80,6 +81,23 @@ def init_board(board):
     board[3][4] = BLACK_TILE
     board[4][3] = BLACK_TILE
     board[4][4] = WHITE_TILE
+
+def save_game(board, turn):
+    data = {}
+    data['game'] = []
+    data['game'].append({
+        'board': board,
+        'turn': turn
+    })
+
+    with open('reversi.txt', 'w') as out:
+        json.dump(data, out)
+
+def load_game():
+    with open('reversi.txt') as json_file:
+        data = json.load(json_file)
+
+    return data['game']['board'], data['game']['turn']
 
 def drawBoard(board):
     # Draw background of board.
@@ -820,8 +838,8 @@ def makeMoveUsingMouse(board, turn):
                     return True
                 if saveGameRect.collidepoint((mousex, mousey)):
                     # Save the game
-                    #TODO
-                    return True
+                    save_game(board, turn)
+                    return turn
                 movexy = getSpaceClicked(mousex, mousey)
                 if movexy != None and not isValidMove(board, turn, movexy[0], movexy[1]):
                     movexy = None
