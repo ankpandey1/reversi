@@ -160,7 +160,7 @@ class Options:
             self.hud_rect_info.append(rect)
 
     def getUserInput(self):
-        global gameOver, e, pickedMenuItem
+        global gameOver, e, pickedMenuItem, pickedOptionsItem
         global music_volume, languageIndex
 
         for e in pygame.event.get():
@@ -221,6 +221,7 @@ class Options:
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     if e.button == 1 and self.optionNumber == len(options) - 1:
                         pickedMenuItem = False
+                        pickedOptionsItem = False
                         self.optionNumber = 0
 
         bg_music.set_volume(soundInfo[0] / 100)
