@@ -6,6 +6,8 @@ WHITE_TILE = 'W'
 BLACK_TILE = 'B'
 EMPTY_SPACE = 0
 FPS = 10
+PLAYER1 = ''
+PLAYER2 = ''
 
 # width of the program's window, in pixels
 WINDOWWIDTH = 800
@@ -18,7 +20,7 @@ BOARDWIDTH = 8
 # rows on the game board
 BOARDHEIGHT = 8
 ANIMATIONSPEED = 25
-
+SAVED_GAME = False
 
 
 # space on the left & right side (XMARGIN) or above and below
@@ -72,6 +74,7 @@ def getNewBoard():
 
 def init_board(board):
     # Blanks out the board it is passed, and sets up starting tiles.
+    global SAVED_GAME
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
             board[x][y] = EMPTY_SPACE
@@ -81,14 +84,17 @@ def init_board(board):
     board[3][4] = BLACK_TILE
     board[4][3] = BLACK_TILE
     board[4][4] = WHITE_TILE
+    SAVED_GAME = False
 
 def save_game(board, turn):
+    global SAVED_GAME
     data = {}
     data['game'] = []
     data['game'].append({
         'board': board,
         'turn': turn
     })
+    SAVED_GAME = True
 
     with open('reversi.txt', 'w') as out:
         json.dump(data, out)
@@ -96,8 +102,7 @@ def save_game(board, turn):
 def load_game():
     with open('reversi.txt') as json_file:
         data = json.load(json_file)
-
-    return data['game']['board'], data['game']['turn']
+    return data['game'][0]['board'], data['game'][0]['turn']
 
 def drawBoard(board):
     # Draw background of board.
@@ -134,6 +139,7 @@ def translateBoardToPixelCoord(x, y):
     return XMARGIN + x * SPACESIZE + int(SPACESIZE / 2), YMARGIN + y * SPACESIZE + int(SPACESIZE / 2)
 
 def enterPlayerTile():
+    global PLAYER1, PLAYER2
     # Draws the text and handles the mouse click events for letting
     # player1 choose which color they want to be.
 
@@ -157,8 +163,12 @@ def enterPlayerTile():
             if event.type == MOUSEBUTTONUP:
                 mousex, mousey = event.pos
                 if xRect.collidepoint( (mousex, mousey) ):
+                    PLAYER1 = WHITE_TILE #stating that Player 1 is WHITE
+                    PLAYER2 = BLACK_TILE #stating that Player 2 is Black
                     return [WHITE_TILE, BLACK_TILE]
                 elif oRect.collidepoint( (mousex, mousey) ):
+                    PLAYER1 = BLACK_TILE #stating that Player 1 is BLACK
+                    PLAYER2 = WHITE_TILE #stating that Player 2 is WHITE
                     return [BLACK_TILE, WHITE_TILE]
 
         # Draw the screen.
@@ -825,7 +835,7 @@ def makeMoveUsingMouse(board, turn):
     saveGameRect.topright = (WINDOWWIDTH - 138, 10)
 
     movexy = None
-    while movexy == None:
+    while movexy == None and not SAVED_GAME:
         boardToDraw = board
 
         checkForQuit()
@@ -856,11 +866,14 @@ def makeMoveUsingMouse(board, turn):
         pygame.display.update()
 
     # Make the move and end the turn.
-    makeMove(board, turn, movexy[0], movexy[1], True)
-    if getValidMoves(board, getOpponent(turn)) != []:
-        # Only set for the Opponent's turn if it can make a move.
-        turn = getOpponent(turn)
-    return turn
+    if not SAVED_GAME:
+        makeMove(board, turn, movexy[0], movexy[1], True)
+        if getValidMoves(board, getOpponent(turn)) != []:
+            # Only set for the Opponent's turn if it can make a move.
+            turn = getOpponent(turn)
+        return turn
+    else:
+        return "save"
 
 def isOnBoard(x, y):
     # Returns True if the coordinates are located on the board.
@@ -871,7 +884,7 @@ def drawInfo(board, playerTile, opponentTile, turn):
     scores = getScoreOfBoard(board, playerTile)
     print(scores)
     print(scores[playerTile])
-    scoreSurf = FONT.render("Player1 Score: %s    Player2 Score: %s    %s's Turn" % (str(scores[playerTile]), str(scores[opponentTile]), turn.title()), True, TEXTCOLOR)
+    scoreSurf = FONT.render("Player1 Score: %s    Player2 Score: %s    %s's Turn" % (str(scores[PLAYER1]), str(scores[PLAYER2]), turn.title()), True, TEXTCOLOR)
     scoreRect = scoreSurf.get_rect()
     scoreRect.bottomleft = (10, WINDOWHEIGHT - 5)
     DISPLAYSURF.blit(scoreSurf, scoreRect)
