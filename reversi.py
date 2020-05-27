@@ -182,6 +182,40 @@ def enterPlayerTile():
         pygame.display.update()
         MAINCLOCK.tick(FPS)
 
+def save_game_dialog(board, turn):
+    textSurf = FONT.render('Are you sure you want to save & quit?', True, TEXTCOLOR, TEXTBGCOLOR1)
+    textRect = textSurf.get_rect()
+    textRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
+
+    yesSurf = BIGFONT.render('Yes', True, TEXTCOLOR, TEXTBGCOLOR1)
+    yesRect = yesSurf.get_rect()
+    yesRect.center = (int(WINDOWWIDTH / 2) - 60, int(WINDOWHEIGHT / 2) + 40)
+
+    noSurf = BIGFONT.render('No', True, TEXTCOLOR, TEXTBGCOLOR1)
+    noRect = noSurf.get_rect()
+    noRect.center = (int(WINDOWWIDTH / 2) + 60, int(WINDOWHEIGHT / 2) + 40)
+
+    while True:
+        # Keep looping until the player has clicked on a color.
+        checkForQuit()
+        for event in pygame.event.get(): # event handling loop
+            if event.type == MOUSEBUTTONDOWN:
+                mousex, mousey = event.pos
+                if yesRect.collidepoint( (mousex, mousey) ):
+                    save_game(board, turn)
+                    return [WHITE_TILE, BLACK_TILE]
+                elif noRect.collidepoint( (mousex, mousey) ):
+                    PLAYER1 = BLACK_TILE #stating that Player 1 is BLACK
+                    PLAYER2 = WHITE_TILE #stating that Player 2 is WHITE
+                    return [BLACK_TILE, WHITE_TILE]
+
+        # Draw the screen.
+        DISPLAYSURF.blit(textSurf, textRect)
+        DISPLAYSURF.blit(yesSurf, yesRect)
+        DISPLAYSURF.blit(noSurf, noRect)
+        pygame.display.update()
+        MAINCLOCK.tick(FPS)
+
 def checkForQuit():
     for event in pygame.event.get((QUIT, KEYUP)): # event handling loop
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
@@ -845,7 +879,7 @@ def makeMoveUsingMouse(board, turn):
 
         checkForQuit()
         for event in pygame.event.get():  # event handling loop
-            if event.type == MOUSEBUTTONUP:
+            if event.type == MOUSEBUTTONDOWN:
                 # Handle mouse click events
                 mousex, mousey = event.pos
                 if newGameRect.collidepoint((mousex, mousey)):
@@ -853,7 +887,7 @@ def makeMoveUsingMouse(board, turn):
                     return True
                 if saveGameRect.collidepoint((mousex, mousey)):
                     # Save the game
-                    save_game(board, turn)
+                    save_game_dialog(board, turn)
                     return turn
                 movexy = getSpaceClicked(mousex, mousey)
                 if movexy != None and not isValidMove(board, turn, movexy[0], movexy[1]):
@@ -872,7 +906,8 @@ def makeMoveUsingMouse(board, turn):
 
     # Make the move and end the turn.
     if not SAVED_GAME:
-        makeMove(board, turn, movexy[0], movexy[1], True)
+        finalx, finaly = undo_redo_done_move(turn, (movexy[0], movexy[1]), board)
+        makeMove(board, turn, finalx, finaly, True)
         if getValidMoves(board, getOpponent(turn)) != []:
             # Only set for the Opponent's turn if it can make a move.
             turn = getOpponent(turn)
@@ -888,8 +923,6 @@ def isOnBoard(x, y):
 def drawInfo(board, playerTile, opponentTile, turn):
     # Draws scores and whose turn it is at the bottom of the screen.
     scores = getScoreOfBoard(board, playerTile)
-    print(scores)
-    print(scores[playerTile])
     scoreSurf = FONT.render("Player1 Score: %s    Player2 Score: %s    %s's Turn" % (str(scores[PLAYER_1]), str(scores[PLAYER_2]), turn.title()), True, TEXTCOLOR)
     scoreRect = scoreSurf.get_rect()
     scoreRect.bottomleft = (10, WINDOWHEIGHT - 5)
@@ -955,3 +988,83 @@ def animateTileChange(tilesToFlip, tileColor, additionalTile):
 
 
 
+def undo_redo_done_move(tileColor, pixel_coord, board):
+    undoStack = []
+    redoStack = []
+    action = ()
+    played = True
+
+    if tileColor == WHITE_TILE:
+        additionalTileColor = WHITE
+    else:
+        additionalTileColor = BLACK
+    additionalTileX, additionalTileY = translateBoardToPixelCoord(pixel_coord[0], pixel_coord[1])
+    pygame.draw.circle(DISPLAYSURF, additionalTileColor, (additionalTileX, additionalTileY), int(SPACESIZE / 2) - 4)
+    pygame.display.update()
+
+    undoStack.append((additionalTileColor, (additionalTileX, additionalTileY)))
+
+    textSurf = FONT.render('Final move?', True, TEXTCOLOR, TEXTBGCOLOR1)
+    textRect = textSurf.get_rect()
+    textRect.center = (int(WINDOWWIDTH / 2), 40)
+
+    undoSurf = FONT.render('UNDO', True, TEXTCOLOR, TEXTBGCOLOR1)
+    undoRect = undoSurf.get_rect()
+    undoRect.center = (int(WINDOWWIDTH / 2) - 60, 80)
+
+    redoSurf = FONT.render('REDO', True, TEXTCOLOR, TEXTBGCOLOR1)
+    redoRect = redoSurf.get_rect()
+    redoRect.center = (int(WINDOWWIDTH / 2), 80)
+
+    doneSurf = FONT.render('DONE', True, TEXTCOLOR, TEXTBGCOLOR1)
+    doneRect = doneSurf.get_rect()
+    doneRect.center = (int(WINDOWWIDTH / 2) + 60, 80)
+
+    while True:
+        # Keep looping until the player has clicked on a color.
+        checkForQuit()
+        for event in pygame.event.get(): # event handling loop
+            if event.type == MOUSEBUTTONDOWN:
+                mousex, mousey = event.pos
+                if undoRect.collidepoint((mousex, mousey)):
+                    if undoStack != []:
+                        action = undoStack.pop()
+                        pygame.draw.circle(DISPLAYSURF, GREEN, (action[1][0], action[1][1]),
+                                           int(SPACESIZE / 2) - 4)
+                        pygame.display.update()
+                        redoStack.append(action)
+                        played = False
+                elif redoRect.collidepoint((mousex, mousey)) and redoStack != []:
+                    action = redoStack.pop()
+                    pygame.draw.circle(DISPLAYSURF, action[0], (action[1][0], action[1][1]),
+                                       int(SPACESIZE / 2) - 4)
+                    pygame.display.update()
+                    undoStack.append(action)
+                    played = True
+                    print("HEY")
+                elif doneRect.collidepoint((mousex, mousey)) and played:
+                    print("Clicked Done!")
+                    return pixel_coord[0], pixel_coord[1]
+                elif undoStack == []:
+                    #for event in pygame.event.get():  # event handling loop
+                        #if event.type == MOUSEBUTTONDOWN:
+                            # Handle mouse click events
+                    mousex, mousey = event.pos
+                    pixel_coord = getSpaceClicked(mousex, mousey)
+                    if pixel_coord != None and not isValidMove(board, tileColor, pixel_coord[0], pixel_coord[1]):
+                        pixel_coord = None
+                    additionalTileX, additionalTileY = translateBoardToPixelCoord(pixel_coord[0], pixel_coord[1])
+                    pygame.draw.circle(DISPLAYSURF, additionalTileColor, (additionalTileX, additionalTileY),
+                                       int(SPACESIZE / 2) - 4)
+                    pygame.display.update()
+                    redoStack.pop()
+                    undoStack.append((additionalTileColor, (additionalTileX, additionalTileY)))
+                    played = True
+
+        # Draw the screen.
+        DISPLAYSURF.blit(textSurf, textRect)
+        DISPLAYSURF.blit(undoSurf, undoRect)
+        DISPLAYSURF.blit(redoSurf, redoRect)
+        DISPLAYSURF.blit(doneSurf, doneRect)
+        pygame.display.update()
+        MAINCLOCK.tick(FPS)

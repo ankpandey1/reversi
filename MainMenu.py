@@ -97,31 +97,38 @@ class StartMenu:
                     self.hud_number -= 1
                 if e.key == pygame.K_RETURN:
                     pickedMenuItem = True
+                    if self.hud_number == 0:
+                        pickedLoadGameItem = True
+                    elif self.hud_number == 1:
+                        pickedNewGameItem = True
+                    else:
+                        pickedOptionsItem = True
                     self.showTransparentRect = True
             if e.type == pygame.KEYUP:
                 if e.key == pygame.K_RETURN:
                     self.showTransparentRect = False
 
-        for i in range(self.hud_count):
-            if self.hud_images[i].get_rect(
-                    topleft=(self.hud_rect_info[i].topleft[0], self.hud_rect_info[i].topleft[1])).collidepoint(
-                pygame.mouse.get_pos()):
-                self.hud_number = i
-                if e.type == pygame.MOUSEBUTTONDOWN:
-                    if e.button == 1 and self.hud_number == 0:
-                        pickedMenuItem = True
-                        pickedLoadGameItem = True
+            for i in range(self.hud_count):
+                if self.hud_images[i].get_rect(
+                        topleft=(self.hud_rect_info[i].topleft[0], self.hud_rect_info[i].topleft[1])).collidepoint(
+                    pygame.mouse.get_pos()):
+                    self.hud_number = i
+                    if e.type == pygame.MOUSEBUTTONDOWN:
+                        print("I AM HERE AND DONT CARE "+str(e.type))
+                        if e.button == 1 and self.hud_number == 0:
+                            pickedMenuItem = True
+                            pickedLoadGameItem = True
 
-                    if e.button == 1 and self.hud_number == 1:
-                        pickedMenuItem = True
-                        pickedNewGameItem = True
+                        if e.button == 1 and self.hud_number == 1:
+                            pickedMenuItem = True
+                            pickedNewGameItem = True
 
-                    elif e.button == 1 and self.hud_number == 2:
-                        pickedMenuItem = True
-                        pickedOptionsItem = True
-                    # self.showTransparentRect = True
-                # elif e.type == pygame.MOUSEBUTTONUP:
-                #     self.showTransparentRect = False
+                        elif e.button == 1 and self.hud_number == 2:
+                            pickedMenuItem = True
+                            pickedOptionsItem = True
+                        # self.showTransparentRect = True
+                    # elif e.type == pygame.MOUSEBUTTONUP:
+                    #     self.showTransparentRect = False
 
 
 class Options:
@@ -366,7 +373,6 @@ def runGameLoop():
             turn = playerTile
             while (len(getValidMoves(board, turn)) != 0) or (
                     len(getValidMoves(board, getOpponent(turn))) != 0) and turn != "save":
-
                 turn = makeMoveUsingMouse(board, turn)
             pickedNewGameItem = False
             pickedMenuItem = False
