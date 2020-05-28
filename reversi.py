@@ -1,6 +1,7 @@
 import random, sys, pygame, time, copy
 from pygame.locals import *
 import json
+import GameSettings
 
 WHITE_TILE = 'W'
 BLACK_TILE = 'B'
@@ -40,8 +41,11 @@ TEXTBGCOLOR2 = GREEN
 GRIDLINECOLOR = BLACK
 TEXTCOLOR = WHITE
 
+
+boardText = None
+
 def init_pygame():
-    global MAINCLOCK, DISPLAYSURF, FONT, BIGFONT, BGIMAGE
+    global MAINCLOCK, DISPLAYSURF, FONT, BIGFONT, BGIMAGE, boardText
 
     pygame.init()
     MAINCLOCK = pygame.time.Clock()
@@ -49,6 +53,12 @@ def init_pygame():
     pygame.display.set_caption('Reversi')
     FONT = pygame.font.Font('freesansbold.ttf', 16)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
+
+    # print(GameSettings.volume_numbers)
+    GameSettings.readDataFromJSON()
+    languageIndex = GameSettings.returnLanguageIndex()
+    boardText = GameSettings.returnBoardTextList(languageIndex)
+
 
     # Set up the background image.
     boardImage = pygame.image.load('reversiboard.png')
@@ -148,15 +158,15 @@ def enterPlayerTile():
     # player1 choose which color they want to be.
 
     # Create the text.
-    textSurf = FONT.render('Player 1 : Do you want to be white or black?', True, TEXTCOLOR, TEXTBGCOLOR1)
+    textSurf = FONT.render(boardText[0] + ": " + boardText[1], True, TEXTCOLOR, TEXTBGCOLOR1)
     textRect = textSurf.get_rect()
     textRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
 
-    xSurf = BIGFONT.render('White', True, TEXTCOLOR, TEXTBGCOLOR1)
+    xSurf = BIGFONT.render(boardText[2], True, TEXTCOLOR, TEXTBGCOLOR1)
     xRect = xSurf.get_rect()
     xRect.center = (int(WINDOWWIDTH / 2) - 60, int(WINDOWHEIGHT / 2) + 40)
 
-    oSurf = BIGFONT.render('Black', True, TEXTCOLOR, TEXTBGCOLOR1)
+    oSurf = BIGFONT.render(boardText[3], True, TEXTCOLOR, TEXTBGCOLOR1)
     oRect = oSurf.get_rect()
     oRect.center = (int(WINDOWWIDTH / 2) + 60, int(WINDOWHEIGHT / 2) + 40)
 
@@ -183,15 +193,15 @@ def enterPlayerTile():
         MAINCLOCK.tick(FPS)
 
 def save_game_dialog(board, turn):
-    textSurf = FONT.render('Are you sure you want to save & quit?', True, TEXTCOLOR, TEXTBGCOLOR1)
+    textSurf = FONT.render(boardText[4], True, TEXTCOLOR, TEXTBGCOLOR1)
     textRect = textSurf.get_rect()
     textRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
 
-    yesSurf = BIGFONT.render('Yes', True, TEXTCOLOR, TEXTBGCOLOR1)
+    yesSurf = BIGFONT.render(boardText[5], True, TEXTCOLOR, TEXTBGCOLOR1)
     yesRect = yesSurf.get_rect()
     yesRect.center = (int(WINDOWWIDTH / 2) - 60, int(WINDOWHEIGHT / 2) + 40)
 
-    noSurf = BIGFONT.render('No', True, TEXTCOLOR, TEXTBGCOLOR1)
+    noSurf = BIGFONT.render(boardText[6], True, TEXTCOLOR, TEXTBGCOLOR1)
     noRect = noSurf.get_rect()
     noRect.center = (int(WINDOWWIDTH / 2) + 60, int(WINDOWHEIGHT / 2) + 40)
 
@@ -869,7 +879,7 @@ def makeMoveUsingMouse(board, turn):
     newGameRect.topright = (WINDOWWIDTH - 8, 10)
 
 # make the Surface and Rect objects for the "Save Game"
-    saveGameSurf = FONT.render('Save Game', True, TEXTCOLOR, TEXTBGCOLOR2)
+    saveGameSurf = FONT.render(boardText[7], True, TEXTCOLOR, TEXTBGCOLOR2)
     saveGameRect = saveGameSurf.get_rect()
     saveGameRect.topright = (WINDOWWIDTH - 138, 10)
 
@@ -923,7 +933,9 @@ def isOnBoard(x, y):
 def drawInfo(board, playerTile, opponentTile, turn):
     # Draws scores and whose turn it is at the bottom of the screen.
     scores = getScoreOfBoard(board, playerTile)
-    scoreSurf = FONT.render("Player1 Score: %s    Player2 Score: %s    %s's Turn" % (str(scores[PLAYER_1]), str(scores[PLAYER_2]), turn.title()), True, TEXTCOLOR)
+    scoreSurf = FONT.render("%s %s: %s    %s %s: %s    %s's %s" % (boardText[0], boardText[8], str(scores[PLAYER_1]),
+                                                                     boardText[9], boardText[8], str(scores[PLAYER_2]),
+                                                                     turn.title(), boardText[10]), True, TEXTCOLOR)
     scoreRect = scoreSurf.get_rect()
     scoreRect.bottomleft = (10, WINDOWHEIGHT - 5)
     DISPLAYSURF.blit(scoreSurf, scoreRect)
@@ -1004,7 +1016,7 @@ def undo_redo_done_move(tileColor, pixel_coord, board):
 
     undoStack.append((additionalTileColor, (additionalTileX, additionalTileY)))
 
-    textSurf = FONT.render('Final move?', True, TEXTCOLOR, TEXTBGCOLOR1)
+    textSurf = FONT.render(boardText[11], True, TEXTCOLOR, TEXTBGCOLOR1)
     textRect = textSurf.get_rect()
     textRect.center = (int(WINDOWWIDTH / 2), 40)
 
@@ -1016,7 +1028,7 @@ def undo_redo_done_move(tileColor, pixel_coord, board):
     redoRect = redoSurf.get_rect()
     redoRect.center = (int(WINDOWWIDTH / 2), 80)
 
-    doneSurf = FONT.render('DONE', True, TEXTCOLOR, TEXTBGCOLOR1)
+    doneSurf = FONT.render(boardText[12], True, TEXTCOLOR, TEXTBGCOLOR1)
     doneRect = doneSurf.get_rect()
     doneRect.center = (int(WINDOWWIDTH / 2) + 60, 80)
 
@@ -1026,7 +1038,7 @@ def undo_redo_done_move(tileColor, pixel_coord, board):
         for event in pygame.event.get(): # event handling loop
             if event.type == MOUSEBUTTONDOWN:
                 mousex, mousey = event.pos
-                if undoRect.collidepoint((mousex, mousey)):
+                if undoRect.collidepoint((mousex, mousey)): #When UNDO is clicked
                     if undoStack != []:
                         action = undoStack.pop()
                         pygame.draw.circle(DISPLAYSURF, GREEN, (action[1][0], action[1][1]),
@@ -1034,17 +1046,16 @@ def undo_redo_done_move(tileColor, pixel_coord, board):
                         pygame.display.update()
                         redoStack.append(action)
                         played = False
-                elif redoRect.collidepoint((mousex, mousey)) and redoStack != []:
+                elif redoRect.collidepoint((mousex, mousey)) and redoStack != []: #When REDO is clicked
                     action = redoStack.pop()
                     pygame.draw.circle(DISPLAYSURF, action[0], (action[1][0], action[1][1]),
                                        int(SPACESIZE / 2) - 4)
                     pygame.display.update()
                     undoStack.append(action)
                     played = True
-                    print("HEY")
-                elif doneRect.collidepoint((mousex, mousey)) and played:
-                    print("Clicked Done!")
-                    return pixel_coord[0], pixel_coord[1]
+                elif doneRect.collidepoint((mousex, mousey)): #When DONE is clicked
+                    if played:
+                        return pixel_coord[0], pixel_coord[1]
                 elif undoStack == []:
                     #for event in pygame.event.get():  # event handling loop
                         #if event.type == MOUSEBUTTONDOWN:

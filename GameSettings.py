@@ -72,6 +72,9 @@ def returnMainMenuTextList(language_index):
 def returnOptionsTextList(language_index):
     return data['language text'][language_index]['options text']
 
+def returnBoardTextList(language_index):
+    return data['language text'][language_index]['board text']
+
 # readDataFromJSON()
 # changeSomeJSONData(22)
 # saveDataToJSON()

@@ -192,9 +192,11 @@ class Options:
                     if e.key == pygame.K_LEFT and languageIndex > 0:
                         languageIndex -= 1
                         self.changeLanguageSettings()
+                        GameSettings.saveDataToJSON(languageIndex, soundInfo[0], soundInfo[1])
                     elif e.key == pygame.K_RIGHT and languageIndex < len(languages) - 1:
                         languageIndex += 1
                         self.changeLanguageSettings()
+                        GameSettings.saveDataToJSON(languageIndex, soundInfo[0], soundInfo[1])
             # volume control with mouse
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
@@ -216,9 +218,11 @@ class Options:
                                 if j % 2 == 0 and languageIndex > 0:
                                     languageIndex -= 1
                                     self.changeLanguageSettings()
+                                    GameSettings.saveDataToJSON(languageIndex, soundInfo[0], soundInfo[1])
                                 elif j % 2 == 1 and languageIndex < len(languages) - 1:
                                     languageIndex += 1
                                     self.changeLanguageSettings()
+                                    GameSettings.saveDataToJSON(languageIndex, soundInfo[0], soundInfo[1])
 
         for i in range(len(options)):
             if self.hud_rect_info[i].get_rect(
