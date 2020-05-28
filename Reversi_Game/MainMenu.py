@@ -1,6 +1,8 @@
 import pygame
 from pygame import mixer
 import GameSettings
+import re
+import os
 
 pygame.init()
 pygame.display.set_caption("Reversi")
@@ -24,6 +26,73 @@ hud_names = GameSettings.returnMainMenuTextList(languageIndex)
 options = GameSettings.returnOptionsTextList(languageIndex)
 
 
+class NewGame:
+    def __init__(self):
+        self.textContainer = ""
+
+    def getUserInput(self):
+        global gameOver, e
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                gameOver = True
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_RETURN and len(self.textContainer) == 2:
+                    self.playVoiceSound(2)
+                elif len(self.textContainer) < 2 and e.key != pygame.K_BACKSPACE:
+                    self.textContainer += str(pygame.key.name(e.key))
+                elif e.key == pygame.K_BACKSPACE and len(self.textContainer) > 0:
+                    self.textContainer = self.textContainer[:-1]
+
+    def playVoiceSound(self, playerNumber):
+        self.textContainer.lower()
+        if re.search('[a-h]', self.textContainer[0]) and re.search('[0-7]', self.textContainer[1]):
+            alpha = self.textContainer[0]
+            numeric = self.textContainer[1]
+            sound_folder_path = os.path.dirname((os.path.realpath(__file__))) + "\Voice\\" + languages[languageIndex]
+        else:
+            print("Invalid input")
+            return
+
+        soundFiles = []
+        file_extension = ".wav"
+        if playerNumber == 1:
+            soundFiles.append(sound_folder_path + "\\" + "player_1" + file_extension)
+        else:
+            soundFiles.append(sound_folder_path + "\\" + "player_2" + file_extension)
+
+        soundFiles.append(sound_folder_path + "\\" + alpha + file_extension)
+        soundFiles.append(sound_folder_path + "\\" + numeric + file_extension)
+
+        for i in range(len(soundFiles)):
+            mixer.music.load(soundFiles[i])
+            mixer.music.set_volume(soundInfo[1])
+            mixer.music.play(0)
+            while pygame.mixer.music.get_busy():
+                pass
+                # print("Playing 'Player 1 to'")
+        # print("Current language: " + languages[languageIndex])
+        # print(dir_path)
+        # print("Voice volume: " + str(soundInfo[1]))
+
+        # for root, dirs, files in os.walk(dir_path):
+        #     for file in files:
+        #         voice_sound = dir_path + "\\" + file
+        #         if "0" in file:
+        #             mixer.music.load(voice_sound)
+        #             mixer.music.play(0)
+        #             while pygame.mixer.music.get_busy():
+        #                 print("Playing 'Player 1 to'")
+
+        # print("Done")
+
+    def displayText(self):
+        space_between = 300 + 50
+
+        text = font.render("Enter some text: " + self.textContainer, True, ((238, 195, 67)))
+        screen.blit(text, (50, space_between + text.get_height() + 30))
+
+
 class StartMenu:
 
     def __init__(self):
@@ -31,7 +100,7 @@ class StartMenu:
         self.hud_rect_info = []
         # self.hud_names = ["Load Game", "New Game", "Options"]
         self.hud_count = 3
-        self.hud_number = 0
+        self.hud_number = 1
         self.hud_width = 300
         self.hud_height = 100
         self.pickedMenuItem = False
@@ -108,7 +177,6 @@ class StartMenu:
 
 
 class Options:
-
     def __init__(self):
         # self.options = ["Music Volume", "Voice Volume", "Language", "<<Back"]
         self.option_fonts = []
@@ -307,12 +375,14 @@ class Options:
 
 startMenu = StartMenu()
 optionsMenu = Options()
+newGame = NewGame()
 
-
-# pickedMenuItem = True
+pickedMenuItem = True
 
 
 def runGameLoop():
+    global gameOver
+
     while not gameOver:
         screen.fill((55, 142, 11))
         # place the title image on the screen
@@ -322,8 +392,14 @@ def runGameLoop():
             startMenu.getUserInput()
             startMenu.displayGraphics()
         else:
-            optionsMenu.getUserInput()
-            optionsMenu.displayGraphics()
+            if startMenu.hud_number == 0:
+                gameOver = True
+            elif startMenu.hud_number == 1:
+                newGame.getUserInput()
+                newGame.displayText()
+            else:
+                optionsMenu.getUserInput()
+                optionsMenu.displayGraphics()
 
         pygame.display.update()
 
