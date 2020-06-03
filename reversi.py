@@ -1,7 +1,11 @@
+#coding=utf-8
+
 import random, sys, pygame, time, copy
 from pygame.locals import *
 import json
 import GameSettings
+import os
+from pygame import mixer
 
 WHITE_TILE = 'W'
 BLACK_TILE = 'B'
@@ -23,6 +27,15 @@ SAVED_GAME = False
 PLAYER_1 = None
 PLAYER_2 = None
 
+languages = ["English", "Svenska"]
+GameSettings.readDataFromJSON()
+#languageIndex = GameSettings.returnLanguageIndex()
+
+soundInfo = GameSettings.volume_numbers
+languageIndex = GameSettings.returnLanguageIndex()
+# print(languageIndex)
+hud_names = GameSettings.returnMainMenuTextList(languageIndex)
+options = GameSettings.returnOptionsTextList(languageIndex)
 
 # space on the left & right side (XMARGIN) or above and below
 # (YMARGIN) the game board, in pixels.
@@ -35,6 +48,7 @@ BLACK      = (  0,   0,   0)
 GREEN      = (  0, 155,   0)
 BRIGHTBLUE = (  0,  50, 255)
 BROWN      = (174,  94,   0)
+DARKGRAY   =  (169, 169,169)
 
 TEXTBGCOLOR1 = BRIGHTBLUE
 TEXTBGCOLOR2 = GREEN
@@ -142,6 +156,16 @@ def drawBoard(board):
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
             centerx, centery = translateBoardToPixelCoord(x, y)
+            textSurf1 = FONT.render((chr(97+y)+str(x)), True, DARKGRAY , TEXTBGCOLOR2)
+            #textRect1 = textSurf1.get_rect()
+            #textSurf1.center = (int(WINDOWWIDTH / 2 + 10), int(WINDOWHEIGHT / 2))
+            #textSurf1.fill((0, 0, 0, 0))
+            #textSurf1.set_colorkey((255,0,255))
+            #textSurf1.fill((255, 255, 255, 128))
+            #DISPLAYSURF.blit(textSurf1, (int(WINDOWWIDTH / 2) + 200, int(WINDOWHEIGHT / 2) + 200))
+
+
+            DISPLAYSURF.blit(textSurf1,(centerx + 6, centery + 1))
             if board[x][y] == WHITE_TILE or board[x][y] == BLACK_TILE:
                 if board[x][y] == WHITE_TILE:
                     tileColor = WHITE
@@ -162,10 +186,12 @@ def enterPlayerTile():
     textRect = textSurf.get_rect()
     textRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
 
+    #White Tile Button
     xSurf = BIGFONT.render(boardText[2], True, TEXTCOLOR, TEXTBGCOLOR1)
     xRect = xSurf.get_rect()
     xRect.center = (int(WINDOWWIDTH / 2) - 60, int(WINDOWHEIGHT / 2) + 40)
 
+    #Black Tile Button
     oSurf = BIGFONT.render(boardText[3], True, TEXTCOLOR, TEXTBGCOLOR1)
     oRect = oSurf.get_rect()
     oRect.center = (int(WINDOWWIDTH / 2) + 60, int(WINDOWHEIGHT / 2) + 40)
@@ -853,6 +879,13 @@ def makeMove(board, tile, xstart, ystart, realMove=False):
     # Place the tile on the board at xstart, ystart, and flip tiles
     # Returns False if this is an invalid move, True if it is valid.
     tilesToFlip = isValidMove(board, tile, xstart, ystart)
+    if tile == PLAYER_1:
+        playerNumber = 1
+    elif tile == PLAYER_2:
+        playerNumber = 2
+    else:
+        print("Invalid User")
+    playVoiceSound(chr(97+ystart), str(xstart), playerNumber)
 
     if tilesToFlip == False:
         return False
@@ -1079,3 +1112,24 @@ def undo_redo_done_move(tileColor, pixel_coord, board):
         DISPLAYSURF.blit(doneSurf, doneRect)
         pygame.display.update()
         MAINCLOCK.tick(FPS)
+
+def playVoiceSound(alpha, numeric, playerNumber):
+    #self.textContainer.lower()
+    sound_folder_path = os.path.dirname((os.path.realpath(__file__))) + "\Voice\\" + languages[languageIndex]
+
+    soundFiles = []
+    file_extension = ".wav"
+    if playerNumber == 1:
+        soundFiles.append(sound_folder_path + "\\" + "player_1" + file_extension)
+    else:
+        soundFiles.append(sound_folder_path + "\\" + "player_2" + file_extension)
+
+    soundFiles.append(sound_folder_path + "\\" + alpha + file_extension)
+    soundFiles.append(sound_folder_path + "\\" + numeric + file_extension)
+
+    for i in range(len(soundFiles)):
+        mixer.music.load(soundFiles[i])
+        mixer.music.set_volume(soundInfo[1])
+        mixer.music.play(0)
+        while pygame.mixer.music.get_busy():
+            pass
