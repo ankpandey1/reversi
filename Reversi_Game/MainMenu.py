@@ -20,6 +20,8 @@ languages = ["English", "Svenska"]
 # print(GameSettings.volume_numbers)
 GameSettings.readDataFromJSON()
 soundInfo = GameSettings.volume_numbers
+bg_music.play(-1)
+bg_music.set_volume(soundInfo[0])
 languageIndex = GameSettings.returnLanguageIndex()
 # print(languageIndex)
 hud_names = GameSettings.returnMainMenuTextList(languageIndex)
@@ -186,8 +188,6 @@ class Options:
         self.foo = []
         # index 0 = music volume, index 1 = voice volume
         # self.soundInfo = [50, 50]
-        bg_music.set_volume(soundInfo[0])
-        bg_music.play(-1)
         self.optionNumber = 0
         self.setupPositionOfHUDItems()
 
@@ -377,7 +377,8 @@ startMenu = StartMenu()
 optionsMenu = Options()
 newGame = NewGame()
 
-pickedMenuItem = True
+
+# pickedMenuItem = True
 
 
 def runGameLoop():
