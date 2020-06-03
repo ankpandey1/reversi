@@ -22,7 +22,21 @@ def main():
 
     while (len(getValidMoves(board, turn)) != 0) or (len(getValidMoves(board, getOpponent(turn))) != 0):
         turn = makeMoveUsingMouse(board, turn)
-#        move = makeMove(board, turn, x, y, True)
+#       move = makeMove(board, turn, x, y, True)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.VIDEORESIZE:
+                DISPLAYSURF = pygame.display.set_mode((event.w, event.h), HWSURFACE | DOUBLEBUF | RESIZABLE, 32)
+                BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (event.w, event.h))
+                changeScreenSize(event.h, event.w, BGIMAGE, DISPLAYSURF)
+                drawBoard(board)
+
+            pygame.display.update()
+
 
  #       if move in getValidMoves(board, turn):
   #          playMove(move, board, turn)

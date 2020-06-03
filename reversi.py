@@ -58,12 +58,17 @@ TEXTCOLOR = WHITE
 
 boardText = None
 
+def changeScreenSize(height, width, bgImage, displaysurf):
+    WINDOWHEIGHT = height
+    WINDOWWIDTH = width
+
 def init_pygame():
     global MAINCLOCK, DISPLAYSURF, FONT, BIGFONT, BGIMAGE, boardText
 
     pygame.init()
     MAINCLOCK = pygame.time.Clock()
-    DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+    DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), HWSURFACE | DOUBLEBUF | RESIZABLE)
+    #DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Reversi')
     FONT = pygame.font.Font('freesansbold.ttf', 16)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
