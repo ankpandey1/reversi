@@ -11,6 +11,7 @@ WHITE_TILE = 'W'
 BLACK_TILE = 'B'
 EMPTY_SPACE = 0
 FPS = 10
+HINT_TILE = 'HINT_TILE'
 
 # width of the program's window, in pixels
 WINDOWWIDTH = 800
@@ -54,6 +55,7 @@ TEXTBGCOLOR1 = BRIGHTBLUE
 TEXTBGCOLOR2 = GREEN
 GRIDLINECOLOR = BLACK
 TEXTCOLOR = WHITE
+HINTCOLOR = BRIGHTBLUE
 
 
 boardText = None
@@ -162,12 +164,6 @@ def drawBoard(board):
         for y in range(BOARDHEIGHT):
             centerx, centery = translateBoardToPixelCoord(x, y)
             textSurf1 = FONT.render((chr(97+y)+str(x)), True, DARKGRAY , TEXTBGCOLOR2)
-            #textRect1 = textSurf1.get_rect()
-            #textSurf1.center = (int(WINDOWWIDTH / 2 + 10), int(WINDOWHEIGHT / 2))
-            #textSurf1.fill((0, 0, 0, 0))
-            #textSurf1.set_colorkey((255,0,255))
-            #textSurf1.fill((255, 255, 255, 128))
-            #DISPLAYSURF.blit(textSurf1, (int(WINDOWWIDTH / 2) + 200, int(WINDOWHEIGHT / 2) + 200))
 
 
             DISPLAYSURF.blit(textSurf1,(centerx + 6, centery + 1))
@@ -177,6 +173,9 @@ def drawBoard(board):
                 else:
                     tileColor = BLACK
                 pygame.draw.circle(DISPLAYSURF, tileColor, (centerx, centery), int(SPACESIZE / 2) - 4)
+            if board[x][y] == HINT_TILE:
+                pygame.draw.rect(DISPLAYSURF, HINTCOLOR, (centerx, centery, int(SPACESIZE / 2),int(SPACESIZE / 2)))
+
 
 def translateBoardToPixelCoord(x, y):
     return XMARGIN + x * SPACESIZE + int(SPACESIZE / 2), YMARGIN + y * SPACESIZE + int(SPACESIZE / 2)
@@ -307,6 +306,7 @@ def getValidMoves(board, player):
         for y in range(BOARDHEIGHT):
             if isValidMove(board, player, x, y) != False:
                 validMoves.append((x, y))
+    print(validMoves)
     return validMoves
 
 def isValidMove(board, tile, xstart, ystart):
@@ -921,9 +921,19 @@ def makeMoveUsingMouse(board, turn):
     saveGameRect = saveGameSurf.get_rect()
     saveGameRect.topright = (WINDOWWIDTH - 138, 10)
 
+    hintSurf = FONT.render('Hint', True, TEXTCOLOR, TEXTBGCOLOR2)
+    hintRect = hintSurf.get_rect()
+    hintRect.topright = (WINDOWWIDTH - 250, 10)
+
+    showHints = False
     movexy = None
     while movexy == None and not SAVED_GAME:
         boardToDraw = board
+
+        if showHints:
+            boardToDraw = markValidMoves(board, turn)
+        else:
+            boardToDraw = board
 
         checkForQuit()
         for event in pygame.event.get():  # event handling loop
@@ -937,9 +947,21 @@ def makeMoveUsingMouse(board, turn):
                     # Save the game
                     save_game_dialog(board, turn)
                     return turn
+                if hintRect.collidepoint((mousex, mousey)):
+                    # Mark Hints
+                    showHints = True
+
                 movexy = getSpaceClicked(mousex, mousey)
                 if movexy != None and not isValidMove(board, turn, movexy[0], movexy[1]):
                     movexy = None
+                    sound_folder_path = os.path.dirname((os.path.realpath(__file__))) + "\Voice\\" + languages[
+                        languageIndex]
+                    soundFile = sound_folder_path + "\\" + "invalidmove.wav"
+                    mixer.music.load(soundFile)
+                    mixer.music.set_volume(soundInfo[1])
+                    mixer.music.play(0)
+                    while pygame.mixer.music.get_busy():
+                        pass
 
         # Draw the game board.
         drawBoard(boardToDraw)
@@ -948,6 +970,7 @@ def makeMoveUsingMouse(board, turn):
         # Draw the "New Game" and "Save Game" buttons.
         DISPLAYSURF.blit(newGameSurf, newGameRect)
         DISPLAYSURF.blit(saveGameSurf, saveGameRect)
+        DISPLAYSURF.blit(hintSurf, hintRect)
 
         MAINCLOCK.tick(FPS)
         pygame.display.update()
@@ -1138,3 +1161,11 @@ def playVoiceSound(alpha, numeric, playerNumber):
         mixer.music.play(0)
         while pygame.mixer.music.get_busy():
             pass
+
+def markValidMoves(board, tile):
+    duplicateBoard = copy.deepcopy(board)
+
+    #Mark valid moves as hint tiles
+    for x, y in getValidMoves(duplicateBoard, tile):
+        duplicateBoard[x][y] = HINT_TILE
+    return duplicateBoard
