@@ -1,0 +1,2 @@
+# reversi
+UIP-2
