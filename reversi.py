@@ -6,6 +6,7 @@ import json
 import GameSettings
 import os
 from pygame import mixer
+#import MainMenu
 
 WHITE_TILE = 'W'
 BLACK_TILE = 'B'
@@ -34,7 +35,7 @@ GameSettings.readDataFromJSON()
 
 soundInfo = GameSettings.volume_numbers
 languageIndex = GameSettings.returnLanguageIndex()
-# print(languageIndex)
+print(languageIndex)
 hud_names = GameSettings.returnMainMenuTextList(languageIndex)
 options = GameSettings.returnOptionsTextList(languageIndex)
 
@@ -60,9 +61,59 @@ HINTCOLOR = BRIGHTBLUE
 
 boardText = None
 
-def changeScreenSize(height, width, bgImage, displaysurf):
-    WINDOWHEIGHT = height
-    WINDOWWIDTH = width
+# Set up the background image.
+boardImage = pygame.image.load('reversiboard.png')
+# Use smoothscale() to stretch the board image to fit the entire board:
+boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))
+boardImageRect = boardImage.get_rect()
+boardImageRect.topleft = (XMARGIN, YMARGIN)
+BGIMAGE = pygame.image.load('reversibackground.png')
+# Use smoothscale() to stretch the background image to fit the entire window:
+BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+BGIMAGE.blit(boardImage, boardImageRect)
+
+def changeLanguage():
+    GameSettings.readDataFromJSON()
+    # languageIndex = GameSettings.returnLanguageIndex()
+    global soundInfo
+    global languageIndex
+    soundInfo = GameSettings.volume_numbers
+    languageIndex = GameSettings.returnLanguageIndex()
+    print(languageIndex)
+    global hud_names
+    hud_names = GameSettings.returnMainMenuTextList(languageIndex)
+    global options
+    options = GameSettings.returnOptionsTextList(languageIndex)
+
+
+def changeScreenSize(event):
+    DISPLAYSURF = pygame.display.set_mode((event.w, event.h),
+                                          pygame.RESIZABLE)
+    global WINDOWWIDTH
+    widthDifference = abs(event.w - WINDOWWIDTH)
+    WINDOWWIDTH = event.w
+    print("*****************",event.w)
+    global WINDOWHEIGHT
+    heightDifference = abs(event.h - WINDOWHEIGHT)
+    WINDOWHEIGHT = event.h
+    print("^^^^^^^^^^^^^^^^^^^^6",event.h)
+
+#    global SPACESIZE
+#    SPACESIZE = SPACESIZE + widthDifference
+
+    global XMARGIN
+    XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * SPACESIZE)) / 2)
+    global YMARGIN
+    YMARGIN = int((WINDOWHEIGHT - (BOARDHEIGHT * SPACESIZE)) / 2)
+
+    #BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+
+    #WINDOWHEIGHT = height
+    #WINDOWWIDTH = width
+#    BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+#    BGIMAGE.blit(boardImage, boardImageRect)
+
+
 
 def init_pygame():
     global MAINCLOCK, DISPLAYSURF, FONT, BIGFONT, BGIMAGE, boardText
@@ -141,8 +192,11 @@ def load_game():
 
 def drawBoard(board):
     # Draw background of board.
+    global BGIMAGE
+    BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
     DISPLAYSURF.blit(BGIMAGE, BGIMAGE.get_rect())
-
+    print(XMARGIN)
+    print(YMARGIN)
     # Draw grid lines of the board.
     for x in range(BOARDWIDTH + 1):
         # Draw the horizontal lines.
@@ -950,7 +1004,6 @@ def makeMoveUsingMouse(board, turn):
                 if hintRect.collidepoint((mousex, mousey)):
                     # Mark Hints
                     showHints = True
-
                 movexy = getSpaceClicked(mousex, mousey)
                 if movexy != None and not isValidMove(board, turn, movexy[0], movexy[1]):
                     movexy = None
@@ -962,6 +1015,8 @@ def makeMoveUsingMouse(board, turn):
                     mixer.music.play(0)
                     while pygame.mixer.music.get_busy():
                         pass
+            if event.type == pygame.VIDEORESIZE:
+                changeScreenSize(event)
 
         # Draw the game board.
         drawBoard(boardToDraw)
