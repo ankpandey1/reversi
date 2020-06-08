@@ -65,6 +65,10 @@ boardText = None
 boardImage = pygame.image.load('reversiboard.png')
 # Use smoothscale() to stretch the board image to fit the entire board:
 boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))
+
+WIDTH_BOARD = boardImage.get_width()
+HEIGHT_BOARD = boardImage.get_height()
+
 boardImageRect = boardImage.get_rect()
 boardImageRect.topleft = (XMARGIN, YMARGIN)
 BGIMAGE = pygame.image.load('reversibackground.png')
@@ -89,17 +93,35 @@ def changeLanguage():
 def changeScreenSize(event):
     DISPLAYSURF = pygame.display.set_mode((event.w, event.h),
                                           pygame.RESIZABLE)
-    global WINDOWWIDTH
+
+    global SPACESIZE, WINDOWWIDTH, WINDOWHEIGHT
     widthDifference = abs(event.w - WINDOWWIDTH)
+    heightDifference = abs(event.h - WINDOWHEIGHT)
+
+    if (event.w > WINDOWWIDTH) and event.h > WINDOWHEIGHT:
+        SPACESIZE = int(SPACESIZE + widthDifference / 18)
+    elif event.w < WINDOWWIDTH and event.h < WINDOWHEIGHT:
+        SPACESIZE = int(SPACESIZE - widthDifference / 18)
+    elif event.h > WINDOWHEIGHT and event.w < WINDOWWIDTH:
+        SPACESIZE = int(SPACESIZE - widthDifference / 18)
+    elif event.h > WINDOWHEIGHT and event.w == WINDOWWIDTH:
+        SPACESIZE = int(SPACESIZE + heightDifference / 18)
+    elif event.h < WINDOWHEIGHT and event.w == WINDOWWIDTH:
+        SPACESIZE = int(SPACESIZE - heightDifference / 18)
+    elif event.w > WINDOWWIDTH and event.h == WINDOWHEIGHT:
+        SPACESIZE = int(SPACESIZE + widthDifference / 18)
+    elif event.w < WINDOWWIDTH and event.h == WINDOWHEIGHT:
+        SPACESIZE = int(SPACESIZE - widthDifference / 18)
+    else:
+        SPACESIZE = int(SPACESIZE - heightDifference / 18)
+
+
+
     WINDOWWIDTH = event.w
     print("*****************",event.w)
-    global WINDOWHEIGHT
     heightDifference = abs(event.h - WINDOWHEIGHT)
     WINDOWHEIGHT = event.h
     print("^^^^^^^^^^^^^^^^^^^^6",event.h)
-
-#    global SPACESIZE
-#    SPACESIZE = SPACESIZE + widthDifference
 
     global XMARGIN
     XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * SPACESIZE)) / 2)
@@ -192,24 +214,28 @@ def load_game():
 
 def drawBoard(board):
     # Draw background of board.
-    global BGIMAGE
+    global BGIMAGE, boardImage, boardImageRect
     BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+    boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))
     DISPLAYSURF.blit(BGIMAGE, BGIMAGE.get_rect())
-    print(XMARGIN)
-    print(YMARGIN)
+    boardImageRect = boardImage.get_rect()
+    boardImageRect.topleft = (XMARGIN, YMARGIN)
+    #BGIMAGE.blit(boardImage, boardImageRect)
+    print(boardImage.get_width())
+    print(boardImage.get_height())
     # Draw grid lines of the board.
     for x in range(BOARDWIDTH + 1):
         # Draw the horizontal lines.
         startx = (x * SPACESIZE) + XMARGIN
         starty = YMARGIN
         endx = (x * SPACESIZE) + XMARGIN
-        endy = YMARGIN + (BOARDHEIGHT * SPACESIZE)
+        endy = YMARGIN + boardImage.get_width()
         pygame.draw.line(DISPLAYSURF, GRIDLINECOLOR, (startx, starty), (endx, endy))
     for y in range(BOARDHEIGHT + 1):
         # Draw the vertical lines.
         startx = XMARGIN
         starty = (y * SPACESIZE) + YMARGIN
-        endx = XMARGIN + (BOARDWIDTH * SPACESIZE)
+        endx = XMARGIN + boardImage.get_height()
         endy = (y * SPACESIZE) + YMARGIN
         pygame.draw.line(DISPLAYSURF, GRIDLINECOLOR, (startx, starty), (endx, endy))
 
