@@ -91,15 +91,21 @@ def changeScreenSize(event):
                                           pygame.RESIZABLE)
     global WINDOWWIDTH
     widthDifference = abs(event.w - WINDOWWIDTH)
+    global SPACESIZE
+    if(event.w > WINDOWWIDTH):
+        print('*****************')
+        SPACESIZE = SPACESIZE + widthDifference/16
+    if event.w < WINDOWWIDTH:
+        print('^^^^^^^^^^^^^^^^^')
+        SPACESIZE = SPACESIZE - widthDifference/16
+
     WINDOWWIDTH = event.w
-    print("*****************",event.w)
+  #  print("*****************",widthDifference)
     global WINDOWHEIGHT
     heightDifference = abs(event.h - WINDOWHEIGHT)
     WINDOWHEIGHT = event.h
-    print("^^^^^^^^^^^^^^^^^^^^6",event.h)
+   # print("^^^^^^^^^^^^^^^^^^^^6",heightDifference)
 
-#    global SPACESIZE
-#    SPACESIZE = SPACESIZE + widthDifference
 
     global XMARGIN
     XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * SPACESIZE)) / 2)
@@ -193,8 +199,11 @@ def load_game():
 def drawBoard(board):
     # Draw background of board.
     global BGIMAGE
+    global boardImage, boardImageRect
+    boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))
+    boardImageRect = boardImage.get_rect()
     BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
-    DISPLAYSURF.blit(BGIMAGE, BGIMAGE.get_rect())
+    DISPLAYSURF.blit(BGIMAGE, boardImageRect)
     print(XMARGIN)
     print(YMARGIN)
     # Draw grid lines of the board.
@@ -958,6 +967,37 @@ def makeMove(board, tile, xstart, ystart, realMove=False):
         board[x][y] = tile
     return True
 
+def newGame():
+    newGameSurf = FONT.render("Do you want to start a new game", True, TEXTCOLOR, TEXTBGCOLOR1)
+    newGameRect = newGameSurf.get_rect()
+    newGameRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
+
+    #YES Button
+    yesSurf = BIGFONT.render("YES", True, TEXTCOLOR, TEXTBGCOLOR1)
+    yesRect = yesSurf.get_rect()
+    yesRect.center = (int(WINDOWWIDTH / 2) - 60, int(WINDOWHEIGHT / 2) + 40)
+
+    #NO Button
+    noSurf = BIGFONT.render("NO", True, TEXTCOLOR, TEXTBGCOLOR1)
+    noRect = noSurf.get_rect()
+    noRect.center = (int(WINDOWWIDTH / 2) + 60, int(WINDOWHEIGHT / 2) + 40)
+
+    while True:
+        # Keep looping until the player has clicked on a color.
+        checkForQuit()
+        for event in pygame.event.get(): # event handling loop
+            if event.type == MOUSEBUTTONUP:
+                mousex, mousey = event.pos
+                if yesRect.collidepoint((mousex, mousey)):
+                    return True
+                elif noRect.collidepoint((mousex, mousey)):
+                    return False
+        DISPLAYSURF.blit(newGameSurf, newGameRect)
+        DISPLAYSURF.blit(yesSurf, yesRect)
+        DISPLAYSURF.blit(noSurf, noRect)
+        pygame.display.update()
+
+
 def makeMoveUsingMouse(board, turn):
     global SAVED_GAME
 #    if getValidMoves(board, turn) == []:
@@ -996,7 +1036,9 @@ def makeMoveUsingMouse(board, turn):
                 mousex, mousey = event.pos
                 if newGameRect.collidepoint((mousex, mousey)):
                     # Start a new game
-                    return True
+                    option = newGame()
+                    if option == True:
+                        return("new game")
                 if saveGameRect.collidepoint((mousex, mousey)):
                     # Save the game
                     save_game_dialog(board, turn)

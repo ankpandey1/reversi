@@ -22,6 +22,8 @@ def main():
 
     while (len(getValidMoves(board, turn)) != 0) or (len(getValidMoves(board, getOpponent(turn))) != 0):
         turn = makeMoveUsingMouse(board, turn)
+        if turn == "new game":
+            main()
 #       move = makeMove(board, turn, x, y, True)
 
 #                DISPLAYSURF = pygame.display.set_mode((event.w, event.h), HWSURFACE | DOUBLEBUF | RESIZABLE, 32)
