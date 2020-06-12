@@ -1079,7 +1079,7 @@ def makeMoveUsingMouse(board, turn):
                     while pygame.mixer.music.get_busy():
                         pass
             if event.type == pygame.VIDEORESIZE:
-                if(event.w > 300 and event.h > 300):
+                if(event.w > 400 and event.h > 400):
                     changeScreenSize(event)
                 else:
                     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
