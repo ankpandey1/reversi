@@ -370,6 +370,7 @@ def runGameLoop():
                     len(getValidMoves(board, getOpponent(turn))) != 0) and turn != "save":
 
                 turn = makeMoveUsingMouse(board, turn)
+
             pickedLoadGameItem = False
             pickedMenuItem = False
 
@@ -384,6 +385,9 @@ def runGameLoop():
             while (len(getValidMoves(board, turn)) != 0) or (
                     len(getValidMoves(board, getOpponent(turn))) != 0) and turn != "save":
                 turn = makeMoveUsingMouse(board, turn)
+                if turn == "new game":
+                    pickedNewGameItem = True
+                    runGameLoop()
             pickedNewGameItem = False
             pickedMenuItem = False
         pygame.display.update()
