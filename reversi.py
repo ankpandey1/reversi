@@ -6,6 +6,7 @@ import json
 import GameSettings
 import os
 from pygame import mixer
+from datetime import datetime, time, timedelta
 
 WHITE_TILE = 'W'
 BLACK_TILE = 'B'
@@ -28,6 +29,7 @@ SAVED_GAME = False
 PLAYER_1 = None
 PLAYER_2 = None
 
+lastInvalidMoveTime = datetime.now()
 languages = ["English", "Svenska"]
 GameSettings.readDataFromJSON()
 
@@ -925,8 +927,9 @@ def newGame():
 #Completes mouse move
 def makeMoveUsingMouse(board, turn):
     global SAVED_GAME, DISPLAYSURF
+    global lastInvalidMoveTime
 
-   # make the Surface and Rect objects for the "New Game"
+    # make the Surface and Rect objects for the "New Game"
     newGameSurf = FONT.render('New Game', True, TEXTCOLOR, TEXTBGCOLOR2)
     newGameRect = newGameSurf.get_rect()
     newGameRect.topright = (WINDOWWIDTH - 8, 10)
@@ -969,16 +972,23 @@ def makeMoveUsingMouse(board, turn):
                     # Mark Hints
                     showHints = True
                 movexy = getSpaceClicked(mousex, mousey)
+                #If user clicks on an invalid square, a buzzer sound is played
                 if movexy != None and not isValidMove(board, turn, movexy[0], movexy[1]):
                     movexy = None
-                    sound_folder_path = os.path.dirname((os.path.realpath(__file__))) + "\Voice\\" + languages[
-                        languageIndex]
-                    soundFile = sound_folder_path + "\\" + "invalidmove.wav"
-                    mixer.music.load(soundFile)
-                    mixer.music.set_volume(soundInfo[1])
-                    mixer.music.play(0)
-                    while pygame.mixer.music.get_busy():
-                        pass
+                    currentTime = datetime.now()
+                    #This prevents the stalling of the moves if the user clicks simulateously on the invalid tile
+                    if (currentTime.minute - lastInvalidMoveTime.minute > 1) or (currentTime.second - lastInvalidMoveTime.second > 1):
+                        lastInvalidMoveTime = currentTime
+                        sound_folder_path = os.path.dirname((os.path.realpath(__file__))) + "\Voice\\" + languages[
+                            languageIndex]
+                        soundFile = sound_folder_path + "\\" + "invalidmove.wav"
+                        mixer.music.load(soundFile)
+                        mixer.music.set_volume(soundInfo[1])
+                        mixer.music.play(0)
+                        while pygame.mixer.music.get_busy():
+                            pass
+                    else:
+                        continue
             #Screen resize event
             if event.type == pygame.VIDEORESIZE:
                 #Limiting the resizing of the screen to 400
