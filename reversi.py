@@ -6,7 +6,6 @@ import json
 import GameSettings
 import os
 from pygame import mixer
-#import MainMenu
 
 WHITE_TILE = 'W'
 BLACK_TILE = 'B'
@@ -31,7 +30,6 @@ PLAYER_2 = None
 
 languages = ["English", "Svenska"]
 GameSettings.readDataFromJSON()
-#languageIndex = GameSettings.returnLanguageIndex()
 
 soundInfo = GameSettings.volume_numbers
 languageIndex = GameSettings.returnLanguageIndex()
@@ -62,17 +60,12 @@ HINTCOLOR = BRIGHTBLUE
 boardText = None
 
 # Set up the background image.
-#boardImage = pygame.image.load('reversiboard.png')
-# Use smoothscale() to stretch the board image to fit the entire board:
-#boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))
-#boardImageRect = boardImage.get_rect()
-#boardImageRect.topleft = (XMARGIN, YMARGIN)
 BGIMAGE = pygame.image.load('reversibackground.png')
 # Use smoothscale() to stretch the background image to fit the entire window:
 BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
 BGIMAGE.blit(pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT)), (0, 0))
-#BGIMAGE.blit(boardImage, boardImageRect)
 
+#Changes language in settings when clicked from the main menu
 def changeLanguage():
     GameSettings.readDataFromJSON()
     # languageIndex = GameSettings.returnLanguageIndex()
@@ -87,73 +80,45 @@ def changeLanguage():
     options = GameSettings.returnOptionsTextList(languageIndex)
 
 
+#Changes global variables of window width and height
+#when the resizing event is triggered
+
 def changeScreenSize(event):
     DISPLAYSURF = pygame.display.set_mode((event.w, event.h),
                                           pygame.RESIZABLE)
     global WINDOWWIDTH
     widthDifference = abs(event.w - WINDOWWIDTH)
-    #global SPACESIZE
-    #if(event.w > WINDOWWIDTH):
-        #print('*****************')
-        #SPACESIZE = SPACESIZE + widthDifference/16
-    #if event.w < WINDOWWIDTH:
-        #print('^^^^^^^^^^^^^^^^^')
-        #SPACESIZE = SPACESIZE - widthDifference/16
-
     WINDOWWIDTH = event.w
-    print("*****************", event.w)
-  #  print("*****************",widthDifference)
     global WINDOWHEIGHT
     heightDifference = abs(event.h - WINDOWHEIGHT)
     WINDOWHEIGHT = event.h
-   # print("^^^^^^^^^^^^^^^^^^^^6",heightDifference)
-    print("^^^^^^^^^^^^^^^^^^^^6", event.h)
-
-#    global SPACESIZE
-#    SPACESIZE = SPACESIZE + widthDifference
 
     global XMARGIN
     XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * SPACESIZE)) / 2)
     global YMARGIN
     YMARGIN = int((WINDOWHEIGHT - (BOARDHEIGHT * SPACESIZE)) / 2)
 
-    #BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
-
-    #WINDOWHEIGHT = height
-    #WINDOWWIDTH = width
-#    BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
-#    BGIMAGE.blit(boardImage, boardImageRect)
-
-
-
+#Intializes Pygame variables
 def init_pygame():
     global MAINCLOCK, DISPLAYSURF, FONT, BIGFONT, BGIMAGE, boardText
 
     pygame.init()
     MAINCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), HWSURFACE | DOUBLEBUF | RESIZABLE)
-    #DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('Reversi')
     FONT = pygame.font.Font('freesansbold.ttf', 16)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
 
-    # print(GameSettings.volume_numbers)
     GameSettings.readDataFromJSON()
     languageIndex = GameSettings.returnLanguageIndex()
     boardText = GameSettings.returnBoardTextList(languageIndex)
 
 
     # Set up the background image.
-    #boardImage = pygame.image.load('reversiboard.png')
-    # Use smoothscale() to stretch the board image to fit the entire board:
-    #boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))
-    #boardImageRect = boardImage.get_rect()
-    #boardImageRect.topleft = (XMARGIN, YMARGIN)
     BGIMAGE = pygame.image.load('reversibackground.png')
     # Use smoothscale() to stretch the background image to fit the entire window:
     BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
     BGIMAGE.blit(pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT)), (0, 0))
-    #BGIMAGE.blit(boardImage, boardImageRect)
 
 
 
@@ -205,11 +170,7 @@ def load_game():
 def drawBoard(board):
     # Draw background of board.
     global BGIMAGE
-    #global boardImage, boardImageRect
-    #boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))
-    #boardImageRect = boardImage.get_rect()
     BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
-    #DISPLAYSURF.blit(BGIMAGE, boardImageRect)
     DISPLAYSURF.blit(BGIMAGE, BGIMAGE.get_rect())
     print(XMARGIN)
     print(YMARGIN)
@@ -230,9 +191,6 @@ def drawBoard(board):
         endy = YMARGIN + (BOARDHEIGHT * SPACESIZE)
         pygame.draw.line(DISPLAYSURF, GRIDLINECOLOR, (startx, starty), (endx, endy))
         pygame.draw.line(DISPLAYSURF, GRIDLINECOLOR, (startx+50, starty), (endx+50, endy))
-
-        #print("StartX",startx,"StartY",starty,)
-        #print("EndX",endx,"EndY",endy)
 
     for y in range(BOARDHEIGHT):
         # Draw the vertical lines.
@@ -261,9 +219,11 @@ def drawBoard(board):
                 pygame.draw.rect(DISPLAYSURF, HINTCOLOR, (centerx, centery, int(SPACESIZE / 2),int(SPACESIZE / 2)))
 
 
+#Translates board margins to screen pixel coordinates
 def translateBoardToPixelCoord(x, y):
     return XMARGIN + x * SPACESIZE + int(SPACESIZE / 2), YMARGIN + y * SPACESIZE + int(SPACESIZE / 2)
 
+#Checks player's tiles
 def enterPlayerTile():
     global PLAYER_1, PLAYER_2
     # Draws the text and handles the mouse click events for letting
@@ -340,35 +300,22 @@ def save_game_dialog(board, turn):
         pygame.display.update()
         MAINCLOCK.tick(FPS)
 
+#Checks if user selects to quit the program
 def checkForQuit():
     for event in pygame.event.get((QUIT, KEYUP)): # event handling loop
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
             pygame.quit()
             sys.exit()
 
-#def string_board(board):
-#    board_str = ""
-#    for i in range(64):
-#        if(i%8 == 0):
-#            board_str = board_str + "|"
 
-#        if(board[i] == 0):
-#            board_str = board_str + " |"
-#        elif(board[i] == "B"):
-#            board_str = board_str + "B|"
-#        else:
-#            board_str = board_str + "W|"
-
-#        if(i%8 == 7):
-#            board_str = board_str + "\n"
-#    return board_str
-
+#Returns Player1
 def getCurrentPlayer(player):
     if(player == "W"):
         return "W"
     else:
         return "B"
 
+#Returns player 2
 def getOpponent(player):
     if(player == "W"):
         return "B"
@@ -382,6 +329,7 @@ def updateBoard (board, player, move):
     pass
 
 
+#Returns all valid moves available
 def getValidMoves(board, player):
     # Returns a list of (x,y) tuples of all valid moves.
     validMoves = []
@@ -393,6 +341,7 @@ def getValidMoves(board, player):
     print(validMoves)
     return validMoves
 
+#Check if a particular move is valid
 def isValidMove(board, tile, xstart, ystart):
     # Returns False if the player's move is invalid. If it is a valid
     # move, returns a list of spaces of the captured pieces.
@@ -442,59 +391,12 @@ def isValidMove(board, tile, xstart, ystart):
     return tilesToFlip
 
 
-#def getValidMoves (playerPositions, board, player):
-#    validMoves = []
-#    leftChecked = False
-#    leftUpChecked = False
-#    upChecked = False
-#    rightUpChecked = False
-#    rightChecked = False
-#    rightDownChecked = False
-#    downChecked = False
- #   leftDownChecked = False
-
- #   for i in playerPositions:
- #       if validLeftIndex(i, board, player) >= 0 and (not leftChecked):
-#            validMoves.append(validLeftIndex(i, board, player))
-#            leftChecked = True
-#        if validLeftUpIndex(i, board, player) >= 0 and (not leftUpChecked):
-#            validMoves.append(validLeftUpIndex(i, board, player))
-#            leftUpChecked = True
-#        if validUpIndex(i, board, player) >= 0 and (not upChecked):
- #           validMoves.append(validUpIndex(i, board, player))
-#            upChecked = True
-#        if validRightUpIndex(i, board, player) >= 0 and (not rightUpChecked):
-#            validMoves.append(validRightUpIndex(i, board, player))
-#            rightUpChecked = True
-#        if validRightIndex(i, board, player) >= 0 and (not rightChecked):
-#            validMoves.append(validRightIndex(i, board, player))
-#            rightChecked = True
-#        if validRightDownIndex(i, board, player) >= 0 and (not rightDownChecked):
-#            validMoves.append(validRightDownIndex(i, board, player))
-#            rightDownChecked = True
-#        if validDownIndex(i, board, player) >= 0 and (not downChecked):
-#            validMoves.append(validDownIndex(i, board, player))
-#            downChecked = True
-#        if validLeftDownIndex(i, board, player) >= 0 and (not leftDownChecked):
-#            validMoves.append(validLeftDownIndex(i, board, player))
-#            leftDownChecked = True
-
-#        leftChecked = False
-#        leftUpChecked = False
-#        upChecked = False
-#        rightUpChecked = False
-#        rightChecked = False
-#        rightDownChecked = False
-#        downChecked = False
-#        leftDownChecked = False
-#    return validMoves
 
 def getPlayerPositions (board, player):
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
             if(board[x][y] == player):
                 return(x,y)
-#    return [i for i in range(len(board)) if (board[i] == player)]
 
 def validLeftIndex (pos, board, player):
     isOpponent = False
@@ -988,6 +890,7 @@ def makeMove(board, tile, xstart, ystart, realMove=False):
         board[x][y] = tile
     return True
 
+#Renders the new game dialogue
 def newGame():
     newGameSurf = FONT.render("Do you want to start a new game", True, TEXTCOLOR, TEXTBGCOLOR1)
     newGameRect = newGameSurf.get_rect()
@@ -1019,12 +922,9 @@ def newGame():
         pygame.display.update()
 
 
+#Completes mouse move
 def makeMoveUsingMouse(board, turn):
     global SAVED_GAME, DISPLAYSURF
-#    if getValidMoves(board, turn) == []:
-        # If it's the player's turn but they
-        # can't move, then end the game.
- #       break
 
    # make the Surface and Rect objects for the "New Game"
     newGameSurf = FONT.render('New Game', True, TEXTCOLOR, TEXTBGCOLOR2)
@@ -1036,6 +936,7 @@ def makeMoveUsingMouse(board, turn):
     saveGameRect = saveGameSurf.get_rect()
     saveGameRect.topright = (WINDOWWIDTH - 138, 10)
 
+    #make the Surface and Rect objects for "Hint"
     hintSurf = FONT.render('Hint', True, TEXTCOLOR, TEXTBGCOLOR2)
     hintRect = hintSurf.get_rect()
     hintRect.topright = (WINDOWWIDTH - 250, 10)
@@ -1078,7 +979,9 @@ def makeMoveUsingMouse(board, turn):
                     mixer.music.play(0)
                     while pygame.mixer.music.get_busy():
                         pass
+            #Screen resize event
             if event.type == pygame.VIDEORESIZE:
+                #Limiting the resizing of the screen to 400
                 if(event.w > 400 and event.h > 400):
                     changeScreenSize(event)
                 else:
@@ -1263,6 +1166,8 @@ def undo_redo_done_move(tileColor, pixel_coord, board):
         pygame.display.update()
         MAINCLOCK.tick(FPS)
 
+#This plays voice sounds after every move
+#Voice tells which square the user makes his/her move on
 def playVoiceSound(alpha, numeric, playerNumber):
     #self.textContainer.lower()
     sound_folder_path = os.path.dirname((os.path.realpath(__file__))) + "\Voice\\" + languages[languageIndex]
@@ -1284,6 +1189,7 @@ def playVoiceSound(alpha, numeric, playerNumber):
         while pygame.mixer.music.get_busy():
             pass
 
+#Marks all moves after user clicks on hint
 def markValidMoves(board, tile):
     duplicateBoard = copy.deepcopy(board)
 

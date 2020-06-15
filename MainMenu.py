@@ -372,6 +372,7 @@ def runGameLoop():
             while (len(getValidMoves(board, turn)) != 0) or (
                     len(getValidMoves(board, getOpponent(turn))) != 0) and turn != "save":
                 turn = makeMoveUsingMouse(board, turn)
+                #Recursive call if the user clicks on the new game button
                 if turn == "new game":
                     pickedNewGameItem = True
                     runGameLoop()
