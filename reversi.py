@@ -60,6 +60,7 @@ HINTCOLOR = BRIGHTBLUE
 
 
 boardText = None
+languageIndex = None
 
 # Set up the background image.
 BGIMAGE = pygame.image.load('reversibackground.png')
@@ -102,7 +103,7 @@ def changeScreenSize(event):
 
 #Intializes Pygame variables
 def init_pygame():
-    global MAINCLOCK, DISPLAYSURF, FONT, BIGFONT, BGIMAGE, boardText
+    global MAINCLOCK, DISPLAYSURF, FONT, BIGFONT, BGIMAGE, boardText, languageIndex
 
     pygame.init()
     MAINCLOCK = pygame.time.Clock()
