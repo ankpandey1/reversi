@@ -314,6 +314,38 @@ def checkForQuit():
             pygame.quit()
             sys.exit()
 
+def winner_dialog(board, turn):
+    winner = ""
+    scores = getScoreOfBoard(board, turn)
+    max_value = max(scores.values())  # maximum value
+    max_keys = [k for k, v in scores.items() if v == max_value]  # getting all keys containing the `maximum`
+    if max(max_keys[0]) == PLAYER_1:
+        winner = boardText[0]
+    else:
+        winner = boardText[9]
+
+    textSurf = FONT.render(boardText[13]+": "+winner, True, TEXTCOLOR, TEXTBGCOLOR1)
+    textRect = textSurf.get_rect()
+    textRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2))
+
+    okaySurf = BIGFONT.render(boardText[14], True, TEXTCOLOR, TEXTBGCOLOR1)
+    okayRect = okaySurf.get_rect()
+    okayRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 40)
+
+    while True:
+        # Keep looping until the player has clicked on a color.
+        checkForQuit()
+        for event in pygame.event.get(): # event handling loop
+            if event.type == MOUSEBUTTONUP:
+                mousex, mousey = event.pos
+                if okayRect.collidepoint( (mousex, mousey) ):
+                    return
+
+        # Draw the screen.
+        DISPLAYSURF.blit(textSurf, textRect)
+        DISPLAYSURF.blit(okaySurf, okayRect)
+        pygame.display.update()
+        MAINCLOCK.tick(FPS)
 
 #Returns Player1
 def getCurrentPlayer(player):

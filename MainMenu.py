@@ -121,7 +121,6 @@ class StartMenu:
                     self.hud_number = i
                     # right mouse button click causes the following actions based on which menu item was clicked
                     if e.type == pygame.MOUSEBUTTONDOWN:
-                        print("I AM HERE AND DONT CARE " + str(e.type))
                         if e.button == 1 and self.hud_number == 0:
                             pickedMenuItem = True
                             pickedLoadGameItem = True
@@ -381,6 +380,7 @@ def runGameLoop():
                 if turn == "new game":
                     pickedNewGameItem = True
                     runGameLoop()
+            winner_dialog(board, turn)
             pickedNewGameItem = False
             pickedMenuItem = False
         pygame.display.update()
