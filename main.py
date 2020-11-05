@@ -1,20 +1,45 @@
+#coding=utf-8
+
 from reversi import *
 
 def main():
-    board = init_board()
-    turn = "B"
+#    FONT = pygame.font.Font('freesansbold.ttf', 16)
+#    BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
+    init_pygame()
+    board = getNewBoard()
 
-    while (len(getValidMoves(getPlayerPositions(board, turn), board, turn)) != 0) or (len(getValidMoves(getPlayerPositions(board, getOpponent(turn)), board, turn)) != 0):
-        print(string_board(board))
-        move = input("It's "+turn+" turn. Make a move!: ")
-        move = int(move)
+    init_board(board)
+    #print(board)
 
-        if move in getValidMoves(getPlayerPositions(board, turn), board, turn):
-            playMove(move, board, turn)
-            if len(getValidMoves(getPlayerPositions(board, getOpponent(turn)), board, getOpponent(turn))) != 0:
-                turn = getOpponent(turn)
-        else:
-            print("Invalid move... try again!")
+
+    # Draw the starting board and ask the player what color they want.
+    drawBoard(board)
+
+    playerTile, opponentTile = enterPlayerTile()
+    print(playerTile)
+    turn = playerTile
+
+
+    while (len(getValidMoves(board, turn)) != 0) or (len(getValidMoves(board, getOpponent(turn))) != 0):
+        turn = makeMoveUsingMouse(board, turn)
+        if turn == "new game":
+            main()
+#       move = makeMove(board, turn, x, y, True)
+
+#                DISPLAYSURF = pygame.display.set_mode((event.w, event.h), HWSURFACE | DOUBLEBUF | RESIZABLE, 32)
+ #               BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (event.w, event.h))
+  #              changeScreenSize(event)
+                #drawBoard(board)
+
+#            pygame.display.update()
+
+
+ #       if move in getValidMoves(board, turn):
+  #          playMove(move, board, turn)
+  #          if len(getValidMoves(board, getOpponent(turn))) != 0:
+  #              turn = getOpponent(turn)
+  #      else:
+  #          print("Invalid move... try again!")
 
 if __name__ == "__main__":
     main()

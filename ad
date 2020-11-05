@@ -1,0 +1,58 @@
+[1mdiff --git a/game_settings.json b/game_settings.json[m
+[1mindex 0ee1f1a..54e7d5e 100644[m
+[1m--- a/game_settings.json[m
+[1m+++ b/game_settings.json[m
+[36m@@ -1 +1 @@[m
+[31m-{"language index": 1, "language text": [{"board text": ["Player 1", "Do you want to be white or black?", "White", "Black", "Are you sure you want to save & quit?", "Yes", "No", "Save Game", "Score", "Player 2", "Turn", "Final move?", "DONE"], "hud text": ["Load Game", "New Game", "Options"], "options text": ["Music Volume", "Voice Volume", "Language", "<<Back"]}, {"board text": ["Spelare 1", "Vill du vara vit eller svart?", "Vit", "Svart", "\u00c4r du s\u00e4ker p\u00e5 att du vill spara & sluta?", "Ja", "Nej", "Spara Spelet", "Po\u00e4ng", "Spelare 2", "Tur", "Sista drag?", "GJORT"], "hud text": ["Lastspel", "Nytt Spel", "Alternativ"], "options text": ["Musikvolym", "R\u00f6stvolym", "Spr\u00e5k", "<<Tillbaka"]}], "voice volume": 100, "music volume": 0}[m
+\ No newline at end of file[m
+[32m+[m[32m{"language index": 0, "language text": [{"options text": ["Music Volume", "Voice Volume", "Language", "<<Back"], "hud text": ["Load Game", "New Game", "Options"], "board text": ["Player 1", "Do you want to be white or black?", "White", "Black", "Are you sure you want to save & quit?", "Yes", "No", "Save Game", "Score", "Player 2", "Turn", "Final move?", "DONE"]}, {"options text": ["Musikvolym", "R\u00f6stvolym", "Spr\u00e5k", "<<Tillbaka"], "hud text": ["Lastspel", "Nytt Spel", "Alternativ"], "board text": ["Spelare 1", "Vill du vara vit eller svart?", "Vit", "Svart", "\u00c4r du s\u00e4ker p\u00e5 att du vill spara & sluta?", "Ja", "Nej", "Spara Spelet", "Po\u00e4ng", "Spelare 2", "Tur", "Sista drag?", "GJORT"]}], "voice volume": 100, "music volume": 0}[m
+\ No newline at end of file[m
+[1mdiff --git a/reversi.py b/reversi.py[m
+[1mindex c592da9..22c3062 100644[m
+[1m--- a/reversi.py[m
+[1m+++ b/reversi.py[m
+[36m@@ -91,15 +91,21 @@[m [mdef changeScreenSize(event):[m
+                                           pygame.RESIZABLE)[m
+     global WINDOWWIDTH[m
+     widthDifference = abs(event.w - WINDOWWIDTH)[m
+[32m+[m[32m    global SPACESIZE[m[41m[m
+[32m+[m[32m    if(event.w > WINDOWWIDTH):[m[41m[m
+[32m+[m[32m        print('*****************')[m[41m[m
+[32m+[m[32m        SPACESIZE = SPACESIZE + widthDifference/16[m[41m[m
+[32m+[m[32m    if event.w < WINDOWWIDTH:[m[41m[m
+[32m+[m[32m        print('^^^^^^^^^^^^^^^^^')[m[41m[m
+[32m+[m[32m        SPACESIZE = SPACESIZE - widthDifference/16[m[41m[m
+[32m+[m[41m[m
+     WINDOWWIDTH = event.w[m
+[31m-    print("*****************",event.w)[m
+[32m+[m[32m  #  print("*****************",widthDifference)[m[41m[m
+     global WINDOWHEIGHT[m
+     heightDifference = abs(event.h - WINDOWHEIGHT)[m
+     WINDOWHEIGHT = event.h[m
+[31m-    print("^^^^^^^^^^^^^^^^^^^^6",event.h)[m
+[32m+[m[32m   # print("^^^^^^^^^^^^^^^^^^^^6",heightDifference)[m[41m[m
+ [m
+[31m-#    global SPACESIZE[m
+[31m-#    SPACESIZE = SPACESIZE + widthDifference[m
+ [m
+     global XMARGIN[m
+     XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * SPACESIZE)) / 2)[m
+[36m@@ -193,6 +199,9 @@[m [mdef load_game():[m
+ def drawBoard(board):[m
+     # Draw background of board.[m
+     global BGIMAGE[m
+[32m+[m[32m    global boardImage[m[41m[m
+[32m+[m[32m    boardImage = pygame.transform.smoothscale(boardImage, (BOARDWIDTH * SPACESIZE, BOARDHEIGHT * SPACESIZE))[m[41m[m
+[32m+[m[32m    boardImageRect = boardImage.get_rect()[m[41m[m
+     BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))[m
+     DISPLAYSURF.blit(BGIMAGE, BGIMAGE.get_rect())[m
+     print(XMARGIN)[m
+[1mdiff --git a/reversi.txt b/reversi.txt[m
+[1mindex d028325..2738e00 100644[m
+[1m--- a/reversi.txt[m
+[1m+++ b/reversi.txt[m
+[36m@@ -1 +1 @@[m
+[31m-{"game": [{"player2": "B", "turn": "B", "player1": "W", "board": [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, "B", 0, 0, 0], [0, 0, 0, "W", "B", "W", 0, 0], [0, 0, 0, "W", "W", "W", 0, 0], [0, 0, 0, "W", "B", 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]}]}[m
+\ No newline at end of file[m
+[32m+[m[32m{"game": [{"player2": "B", "turn": "B", "player1": "W", "board": [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, "W", "W", "W", 0, 0], [0, 0, 0, "B", "W", 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]}]}[m
+\ No newline at end of file[m
